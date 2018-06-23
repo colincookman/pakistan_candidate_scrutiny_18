@@ -1,4 +1,4 @@
-# AUTHOR: Colin Cookman
+# AUTHORS: Colin Cookman + Luke Sonnet
 # CONTACT: ccookman at gmail dot com
 
 # ----------
@@ -9,6 +9,13 @@ library(pdftools)
 library(tidyverse)
 library(readtext)
 library(lubridate)
+
+clear_logs <- TRUE
+if (clear_logs) {
+  cat("", file = "err.log", append = FALSE)
+  cat("", file = "missing.log", append = FALSE)
+  cat("", file = "success.log", append = FALSE)
+}
 
 # ---------
 # Build candidate directories
@@ -28,9 +35,23 @@ candidate_dirs <- file_list[grepl("_", file_list)]
 # Helper functions
 # ----------
 
-read_pdf_text <- function(file) {
-  file_import <- pdf_text(file)
-  read_lines(toString(file_import))
+# reads pdf_text and saves any errors or warnings
+read_pdf_text <- function(file, target) {
+  pdf_text <- tryCatch({
+    o <- capture.output(file_import <- pdf_text(file), type = "message")
+    if (any(grepl("PDF error", o))) {
+      cat(paste0(target, "\t", deparse(substitute(file)), " PDF error\n"),
+          file = "err.log",
+          append = TRUE)
+    }
+    return(read_lines(toString(file_import)))
+  },
+  error = function(e) {
+    cat(paste0(target, "\t", deparse(substitute(file)), " read error ", as.character(e), "\n"),
+        file = "err.log",
+        append = TRUE)
+    return(NULL)
+  })
 }
 
 # ----------
@@ -76,12 +97,14 @@ read_candidate_folder <- function(target) {
   
   # CC: Skip for now if empty while it syncs
   if (length(FBR) == 0 | length(NAB) == 0 | length(SBP) == 0) {
-    cat(paste0(target, "\tmissing a file\n"), file = "missing.txt", append = TRUE)
+    cat(paste0(target, "\tmissing a file\n"), file = "missing.log", append = TRUE)
     return(data.frame())
   }
   
   # FBR form import -------------------------------------------------------------
-  FBR_text <- read_pdf_text(FBR)
+  FBR_text <- read_pdf_text(FBR, target)
+  # Means there was read error
+  if (!is.character(FBR_text)) return(data.frame())
 
   FBR_dat <- data.frame(
     tax_year = 2015:2017
@@ -106,14 +129,16 @@ read_candidate_folder <- function(target) {
   FBR_dat$candidate_tax_income <-
     FBR_dat$candidate_tax_receipts <-
     FBR_dat$candidate_tax_paid <- 
-    FBR_dat$candidate_tax_type <- rep(NA, 3)
+    FBR_dat$candidate_tax_type <- 
+    FBR_dat$candidate_tax_remarks <- rep(NA, 3)
   
   Tax_info_start <- grep("Tax Regime", FBR_text)
   Tax_info_end <- grep("Receipts under FTR", FBR_text)
   Tax_info <- trimws(FBR_text[(Tax_info_start+1):(Tax_info_end-1)]) # CC: trimming a little closer
   # remove the year and numbering, also remove "remarks" row if it exists, we can deal with later?
-  Tax_info <- trimws(gsub("([123]\\s+201[567]|Remarks)", "", Tax_info))
-  Tax_info <- Tax_info[Tax_info != ""]
+  Tax_remarks <- any(grepl("Remarks", Tax_info))
+  Tax_info <- gsub("([123]\\s+201[567]|Remarks)", "", Tax_info)
+  Tax_info <- trimws(Tax_info[Tax_info != ""])
   # NB: this means that "missing" FRB forms now are just empty vectors
   
   if (length(Tax_info) == 0) {
@@ -123,16 +148,28 @@ read_candidate_folder <- function(target) {
     # CC: Use purrr to get list of years so that its easy to loop over and apply functions to them
     years <- map(Tax_info, str_split, "\\s{2,}", simplify = TRUE)
     
-    # When there are too many rows, move data up from below to the row that has 3 (meaning it has the right receipts and total tax paid columns)
+
     if (length(years) > 3) {
-      for (i in length(years):2) {
-        if (ncol(years[[i]]) < 3) {
-          years[[i-1]][1, 1] <- paste0(years[[i-1]][1, 1], "\n", years[[i]][1, 1])
-        }
+      
+      # If they have tax remarks, assume they are all rows beyond the first three for now
+      if (Tax_remarks) {
+        FBR_dat$candidate_tax_remarks <- paste(Tax_info[4:length(Tax_info)])
+        years <- years[1:3]
+      } else {
+        # FOR NOW JUST ERROR TO SEE HOW MANY LIKE THIS as I'm unconvinced this fixes it
+        cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
+        return(data.frame())
+        # When there are too many rows, move data up from below to the row that has 3 (meaning it has the right receipts and total tax paid columns)
+        # for (i in length(years):2) {
+        #   if (ncol(years[[i]]) < 3) {
+        #     years[[i-1]][1, 1] <- paste0(years[[i-1]][1, 1], "\n", years[[i]][1, 1])
+        #   }
+        # }
+        # years <- years[1:3]
       }
-      years <- years[c(1, 2, 3)]
+
     } else if (length(years) < 3) {
-      cat(paste0(target, "\t", "not enough rows in tax\n"), file = "log.txt", append = TRUE)
+      cat(paste0(target, "\t", "not enough rows in tax\n"), file = "err.log", append = TRUE)
       return(data.frame())
     }
     
@@ -150,9 +187,20 @@ read_candidate_folder <- function(target) {
         if (all(year == "0")) {
           tax_row <- c("Filer", rep("0", 3))
         } else {
-          # If there is something else going on, log it as an error
-          cat(paste0(target, "\t", "some rows not enough cols\n"), file = "log.txt", append = TRUE)
-          return(data.frame())
+          # If the length is 2, count sequences of characters
+          space_seqs <- rle(strsplit(Tax_info[i], "")[[1]])
+          
+          # If the sequence of spaces is longer than 30, than its cols 1 + 3, with col 2 missing
+          if (any(space_seqs$lengths[space_seqs$values == " "] > 40)) {
+            tax_row <- c("Filer", year[1], NA, year[2])
+          } else {
+            # If space in between is X length, then its 1 and 3, if its
+            # not, then it could be either 1 and 2 or 2 and 3, because of the
+            # trimws above
+            
+            cat(paste0(target, "\t", "some rows not enough cols and cant tell if 1 and 3\n"), file = "err.log", append = TRUE)
+            return(data.frame())
+          }
         }
       } else {
         tax_row <- c("Filer", year[1, ])
@@ -164,16 +212,8 @@ read_candidate_folder <- function(target) {
   
   # NAB form import -------------------------------------------------------------
   # Skip "description" error files for now
-  NAB_text <- tryCatch(
-    read_pdf_text(NAB),
-    error = function(e) {
-      print(target)
-      print(e)
-      cat(paste0(target, "\t", "NAB has invalid 'description' argument \n"), file = "log.txt", append = TRUE)
-      return(NULL)
-    }
-  )
-  if (!is.character(NAB_text)) {return(data.frame())}
+  NAB_text <- read_pdf_text(NAB, target)
+  if (!is.character(NAB_text)) return(data.frame())
   
   CNIC_row <- grep("CNIC", NAB_text)
   CNIC_MNIC <- trimws(str_split(NAB_text[CNIC_row], ":", simplify = TRUE)[1,2])
@@ -194,7 +234,9 @@ read_candidate_folder <- function(target) {
   
   # SBP form import -------------------------------------------------------------
   
-  SBP_text <- read_pdf_text(SBP)
+  SBP_text <- read_pdf_text(SBP, target)
+  if (!is.character(SBP_text)) return(data.frame())
+  
   
   CNIC_row <- grep("CNIC of Candidate:", SBP_text)
   MNIC_row <- grep("MNIC of Candidate:", SBP_text)
@@ -231,7 +273,7 @@ read_candidate_folder <- function(target) {
   )
   # at some point will want to clean up the differing CNIC numbering conventions between SPB (includes dash) and FBR/NAB
   
-  cat(paste0(target, "\t", "success\n"), file = "success.txt", append = TRUE)
+  cat(paste0(target, "\t", "success\n"), file = "success.log", append = TRUE)
   
   # Reorders data, note `everything()` which will just get the rest
   select(ret, names(meta_dat), tax_year, contains("CNIC"), contains("MNIC"), contains("name"), everything())
@@ -241,41 +283,54 @@ read_candidate_folder <- function(target) {
 # Run on all data
 # ----------
 
-# Example ----------
-
-# read_candidate_folder(candidate_dirs[1000])
-
-# For debugging ----------
-
-# Lazy debugging
-# for (target in candidate_dirs) {
-#   print(target)
-#   dat <- read_candidate_folder(target)
-# }
-
-target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-265/NA-265-0019_5440005597555"
-# Poorly formatted example
-target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-13/PB-13-0027_5340345710071"
-# "missing" example
-target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NABW/NABW-0031_5440021680144"
-# "remarks" example
-target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PABM/PABM-0010_5130121369039"
-# Non-filer with 0s
-target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-272/NA-272-0023_5140169339383"
-# Plain Non-filer
-target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-9/PB-9-0019_5520276709583"
-# too much data in tax form
-target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
-# Example 0
-target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-3/PB-3-0016_5620117350297"
-
-# Smarter debugging
-# debugonce(read_candidate_folder)
-# read_candidate_folder(target)
-
 # Final execution ----------
 
 # Can use for loop like above, but growing data.frames recursively is _very_ slow
 # R wants you to use lapply, but let's use purrr, which is the "tidy" way to do this
 dat <- map_dfr(candidate_dirs, read_candidate_folder)
 
+
+debugging <- FALSE
+if (debugging) {
+  # For debugging ----------
+
+  # Lazy debugging
+  for (target in candidate_dirs[2000:3000]) {
+    print(target)
+    dat <- read_candidate_folder(target)
+  }
+
+  # Invalid SBP PDF
+  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PAKM/PAKM-0022_1720184712651"
+  # Forgot what bottom one's case was
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-265/NA-265-0019_5440005597555"
+  # Multiple rows of text in some boxes
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
+  # Missing middle cells, etc...
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-13/PB-13-0027_5340345710071"
+  target <- "2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-32/NA-32-0002_4200072543509"
+  # Both of the above problems
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-261/NA-261-0007_5340382191767"
+  # "missing" example
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NABW/NABW-0031_5440021680144"
+  # "remarks" empty example
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PABM/PABM-0010_5130121369039"
+  # Non-filer with 0s
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-272/NA-272-0023_5140169339383"
+  # Plain Non-filer
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-9/PB-9-0019_5520276709583"
+  # too much data in tax form
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
+  # Example 0
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-3/PB-3-0016_5620117350297"
+  # Has remarks that are meaningful
+  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-54/PK-54-0009_1610271708743"
+  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-86/PK-86-0026_6110171350283"
+  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-91/PK-91-0019_1120104067713"
+  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-5/PB-5-0010_5440074738019"
+
+  # Smarter debugging
+  debugonce(read_candidate_folder)
+  read_candidate_folder(target)
+
+}
