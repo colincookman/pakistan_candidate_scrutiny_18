@@ -134,11 +134,14 @@ read_candidate_folder <- function(target) {
   
   Tax_info_start <- grep("Tax Regime", FBR_text)
   Tax_info_end <- grep("Receipts under FTR", FBR_text)
-  Tax_info <- trimws(FBR_text[(Tax_info_start+1):(Tax_info_end-1)]) # CC: trimming a little closer
+  Tax_info <- FBR_text[(Tax_info_start+1):(Tax_info_end-1)] # CC: trimming a little closer
   # remove the year and numbering, also remove "remarks" row if it exists, we can deal with later?
   Tax_remarks <- any(grepl("Remarks", Tax_info))
   Tax_info <- gsub("([123]\\s+201[567]|Remarks)", "", Tax_info)
-  Tax_info <- trimws(Tax_info[Tax_info != ""])
+  #Leading_ws <- map_dbl(Tax_info, ~ str_locate(.x, "\\w")[1,1] - 1)
+  Tax_info <- trimws(Tax_info)
+  #Leading_ws <- Leading_ws[Tax_info != ""]
+  Tax_info <- Tax_info[Tax_info != ""]
   # NB: this means that "missing" FRB forms now are just empty vectors
   
   if (length(Tax_info) == 0) {
@@ -153,7 +156,7 @@ read_candidate_folder <- function(target) {
       
       # If they have tax remarks, assume they are all rows beyond the first three for now
       if (Tax_remarks) {
-        FBR_dat$candidate_tax_remarks <- paste(Tax_info[4:length(Tax_info)])
+        FBR_dat$candidate_tax_remarks <- paste(Tax_info[4:length(Tax_info)], collapse = "\n")
         years <- years[1:3]
       } else {
         # FOR NOW JUST ERROR TO SEE HOW MANY LIKE THIS as I'm unconvinced this fixes it
@@ -187,19 +190,27 @@ read_candidate_folder <- function(target) {
         if (all(year == "0")) {
           tax_row <- c("Filer", rep("0", 3))
         } else {
-          # If the length is 2, count sequences of characters
-          space_seqs <- rle(strsplit(Tax_info[i], "")[[1]])
           
-          # If the sequence of spaces is longer than 30, than its cols 1 + 3, with col 2 missing
-          if (any(space_seqs$lengths[space_seqs$values == " "] > 40)) {
-            tax_row <- c("Filer", year[1], NA, year[2])
-          } else {
-            # If space in between is X length, then its 1 and 3, if its
-            # not, then it could be either 1 and 2 or 2 and 3, because of the
-            # trimws above
+          if (ncol(year) == 2) {
+            # If the length is 2, count sequences of characters
+            space_seqs <- rle(strsplit(Tax_info[i], "")[[1]])
             
-            cat(paste0(target, "\t", "some rows not enough cols and cant tell if 1 and 3\n"), file = "err.log", append = TRUE)
-            return(data.frame())
+            # If the sequence of spaces is longer than 30, than its cols 1 + 3, with col 2 missing
+            if (any(space_seqs$lengths[space_seqs$values == " "] > 40)) {
+              tax_row <- c("Filer", year[1], NA, year[2])
+              cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "warn.log", append = TRUE)
+            } else {
+              # If space in between is X length, then its 1 and 3, if its
+              # not, then it could be either 1 and 2 or 2 and 3, because of the
+              # trimws above
+              
+              cat(paste0(target, "\t", "some rows not enough cols and cant tell col 2 is missing\n"), file = "err.log", append = TRUE)
+              return(data.frame())
+            }
+          } else {
+            # So far all examples are only first cell filled in, if so, can do simple rule where all go to first position, otherwise have to count leading spaces and infer
+            tax_row <- c("Filer", year[1], NA, NA)
+            cat(paste0(target, "\t", "only 1 col\n"), file = "warn.log", append = TRUE)
           }
         }
       } else {
@@ -276,7 +287,10 @@ read_candidate_folder <- function(target) {
   cat(paste0(target, "\t", "success\n"), file = "success.log", append = TRUE)
   
   # Reorders data, note `everything()` which will just get the rest
-  select(ret, names(meta_dat), tax_year, contains("CNIC"), contains("MNIC"), contains("name"), everything())
+  select(ret,
+    names(meta_dat), tax_year, contains("CNIC"), contains("MNIC"),
+    contains("name"), everything()
+  )
 }
 
 # ----------
@@ -287,8 +301,9 @@ read_candidate_folder <- function(target) {
 
 # Can use for loop like above, but growing data.frames recursively is _very_ slow
 # R wants you to use lapply, but let's use purrr, which is the "tidy" way to do this
-dat <- map_dfr(candidate_dirs, read_candidate_folder)
-
+system.time({dat <- map_dfr(candidate_dirs, read_candidate_folder)})
+# 894 seconds
+write.csv(dat, file = "candidate_scrutiny_forms_2018.csv", row.names = FALSE)
 
 debugging <- FALSE
 if (debugging) {
@@ -311,6 +326,12 @@ if (debugging) {
   target <- "2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-32/NA-32-0002_4200072543509"
   # Both of the above problems
   target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-261/NA-261-0007_5340382191767"
+  # Only has first cell, non-zero, non-"Non-filer"
+  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-83/NA-83-0010_3410245994991"
+  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-200/NA-200-0024_4320364410531"
+  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-211/NA-211-0021_4530278910227"
+  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-236/NA-236-0013_1550108773695"
+  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-12/PS-12-0020_4320173014423"
   # "missing" example
   target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NABW/NABW-0031_5440021680144"
   # "remarks" empty example
@@ -332,5 +353,4 @@ if (debugging) {
   # Smarter debugging
   debugonce(read_candidate_folder)
   read_candidate_folder(target)
-
 }
