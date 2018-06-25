@@ -159,21 +159,23 @@ read_candidate_folder <- function(target) {
         FBR_dat$candidate_tax_remarks <- paste(Tax_info[4:length(Tax_info)], collapse = "\n")
         years <- years[1:3]
       } else {
-        # FOR NOW JUST ERROR TO SEE HOW MANY LIKE THIS as I'm unconvinced this fixes it
-        cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
-        return(data.frame())
-        # When there are too many rows, move data up from below to the row that has 3 (meaning it has the right receipts and total tax paid columns)
+        # When there are too many rows, the first row to have 3 cols should take everything below
+        # that isn't a 0 or "Non-Filer" until you get to another row with three years
         # for (i in length(years):2) {
-        #   if (ncol(years[[i]]) < 3) {
+        #   if (!any(years[[i]] %in% c("0", "Non-Filer")) & ncol(years[[i]]) != 3) {
         #     years[[i-1]][1, 1] <- paste0(years[[i-1]][1, 1], "\n", years[[i]][1, 1])
         #   }
         # }
         # years <- years[1:3]
+        cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
+        return(data.frame())
       }
 
     } else if (length(years) < 3) {
-      cat(paste0(target, "\t", "not enough rows in tax\n"), file = "err.log", append = TRUE)
-      return(data.frame())
+      # All examples showed a missing second year, adding NA, could check trailing WS to be 
+      # more programmatic
+      years <- c(years[[1]], matrix(rep(NA, 3), 1), years[[2]])
+      cat(paste0(target, "\t", "adding row of NA for presumed missing second year\n"), file = "warn.log", append = TRUE)
     }
     
     # check for filers for each year and bind the results together!
@@ -204,8 +206,15 @@ read_candidate_folder <- function(target) {
               # not, then it could be either 1 and 2 or 2 and 3, because of the
               # trimws above
               
-              cat(paste0(target, "\t", "some rows not enough cols and cant tell col 2 is missing\n"), file = "err.log", append = TRUE)
-              return(data.frame())
+              # two have 1 and 2 and no 3, and one just has a really long third column
+              if (any(space_seqs$lengths[space_seqs$values == " "] == 34)) {
+                tax_row <- c("Filer", year[1], NA, year[2])
+                cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "warn.log", append = TRUE)
+              } else {
+                tax_row <- c("Filer", year[1], year[2], NA)
+                cat(paste0(target, "\t", "guessing col 3 missing\n"), file = "warn.log", append = TRUE)
+              }
+
             }
           } else {
             # So far all examples are only first cell filled in, if so, can do simple rule where all go to first position, otherwise have to count leading spaces and infer
@@ -321,6 +330,12 @@ if (debugging) {
   target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-265/NA-265-0019_5440005597555"
   # Multiple rows of text in some boxes
   target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
+  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-98/NA-98-0006_3810106314423" # first row
+  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189" # third row
+  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-19/PS-19-0014_4510136091983" # first and second
+  target <- "2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-15/PP-15-0011_3740552959443" # all three rows
+  target <- "2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-104/PP-104-0015_3310690883097" # long
+  
   # Missing middle cells, etc...
   target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-13/PB-13-0027_5340345710071"
   target <- "2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-32/NA-32-0002_4200072543509"
@@ -349,6 +364,8 @@ if (debugging) {
   target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-86/PK-86-0026_6110171350283"
   target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-91/PK-91-0019_1120104067713"
   target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-5/PB-5-0010_5440074738019"
+  # Too long of col 3 for whitespace check to work
+  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-138/NA-138-0002_3510237042907"
 
   # Smarter debugging
   debugonce(read_candidate_folder)
