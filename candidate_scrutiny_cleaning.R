@@ -250,7 +250,9 @@ candidate_df <- dplyr::select(candidate_df,
   target
 )
 
-# TODO possible variables to drop from final:
+candidate_df <- dplyr::arrange(candidate_df, candidate_code)
+
+# TODO -- possible variables to drop from final:
 # FBR and NAB CNICs if we trust SBP to be most accurate
 # CNIC_ and MNIC_ match checks
 # FBR Urdu name (multiple apparent match errors with NAB)
