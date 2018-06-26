@@ -161,20 +161,44 @@ read_candidate_folder <- function(target) {
       } else {
         # When there are too many rows, the first row to have 3 cols should take everything below
         # that isn't a 0 or "Non-Filer" until you get to another row with three years
-        # for (i in length(years):2) {
-        #   if (!any(years[[i]] %in% c("0", "Non-Filer")) & ncol(years[[i]]) != 3) {
-        #     years[[i-1]][1, 1] <- paste0(years[[i-1]][1, 1], "\n", years[[i]][1, 1])
-        #   }
-        # }
-        # years <- years[1:3]
-        cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
-        return(data.frame())
+
+        
+        # Only do the following if we can find two other rows beyond the first which are clearly the top row for that year
+        if (sum(map_lgl(years[-1], ~ ncol(.x) == 3 |
+                        .x[1] == "Non-Filer" |
+                        (length(.x) == 1 & .x[1] == "0")))
+            == 2) {
+          for (i in length(years):2) {
+            if (ncol(years[[i]]) != 3 & years[[i]][1] != "Non-Filer") {
+              years[[i-1]][1, 1] <- paste0(years[[i-1]][1, 1], "\n", years[[i]][1, 1])
+              years[[i]] <- NULL
+            }
+          }
+          cat(paste0(target, "\t", "too many rows in tax, but all three rows are identifiable\n"), file = "warn.log", append = TRUE)
+        } else if (sum(map_lgl(years, ~ grepl("AOP Share", .x)[1])) == 3) {
+          # Fix one candidate with "AOP SHARE"
+          
+          for (i in c(1, 3, 5)) {
+            years[[i]][1, 1] <- paste0(years[[i]][1, 1], "\n", years[[i+1]][1, 1])
+          }
+          years[c(2, 4, 6)] <- NULL
+          cat(paste0(target, "\t", "too many rows in tax, but AOP share\n"), file = "warn.log", append = TRUE)
+        } else if (cand_meta[1, 5] == "NA-261-0007_5340382191767") {
+          # Fix one candidate with "AOP SHARE"
+          years[[1]][1, 1] <- paste0(years[[1]][1, 1], "\n", years[[2]][1, 1])
+          years[[4]][1, 1] <- paste0(years[[4]][1, 1], "\n", years[[5]][1, 1])
+          years[c(2, 5)] <- NULL
+          cat(paste0(target, "\t", "too many rows in tax, manual fix\n"), file = "warn.log", append = TRUE)
+        } else {
+          cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
+          return(data.frame())
+        }
       }
 
     } else if (length(years) < 3) {
       # All examples showed a missing second year, adding NA, could check trailing WS to be 
       # more programmatic
-      years <- c(years[[1]], matrix(rep(NA, 3), 1), years[[2]])
+      years <- list(years[[1]], matrix(rep(NA, 3), 1), years[[2]])
       cat(paste0(target, "\t", "adding row of NA for presumed missing second year\n"), file = "warn.log", append = TRUE)
     }
     
@@ -319,7 +343,7 @@ if (debugging) {
   # For debugging ----------
 
   # Lazy debugging
-  for (target in candidate_dirs[2000:3000]) {
+  for (target in candidate_dirs) {
     print(target)
     dat <- read_candidate_folder(target)
   }
@@ -366,7 +390,9 @@ if (debugging) {
   target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-5/PB-5-0010_5440074738019"
   # Too long of col 3 for whitespace check to work
   target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-138/NA-138-0002_3510237042907"
+  target <-  "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NASW (8)/NASW-0047_4210114071260"
 
+  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189"
   # Smarter debugging
   debugonce(read_candidate_folder)
   read_candidate_folder(target)
