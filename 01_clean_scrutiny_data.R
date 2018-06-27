@@ -2,7 +2,7 @@
 # NOTES: check INVESTIGATE lines for things to check against raw pdfs, TODO for unfinished sections
 # ----------
 
-candidate_import <- read.csv("candidate_scrutiny_forms_2018.csv", na.strings = "")
+candidate_import <- read.csv("data/candidate_scrutiny_forms_2018.csv", na.strings = "")
 candidate_df <- candidate_import
 
 # years as factors ------------------------------------------------------------

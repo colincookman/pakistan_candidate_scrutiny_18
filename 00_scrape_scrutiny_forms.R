@@ -12,9 +12,9 @@ library(lubridate)
 
 clear_logs <- TRUE
 if (clear_logs) {
-  cat("", file = "err.log", append = FALSE)
-  cat("", file = "missing.log", append = FALSE)
-  cat("", file = "success.log", append = FALSE)
+  cat("", file = "data/err.log", append = FALSE)
+  cat("", file = "data/missing.log", append = FALSE)
+  cat("", file = "data/success.log", append = FALSE)
 }
 
 # ---------
@@ -22,7 +22,7 @@ if (clear_logs) {
 # ----------
 
 # Use project instead of setting directory (CC: create R project at root of both raw data and analysis)
-file_list <- list.dirs("2018 Candidate Scrutiny Forms")
+file_list <- list.dirs("data/2018 Candidate Scrutiny Forms")
 # just select directories with candidate forms in them
 candidate_dirs <- file_list[grepl("_", file_list)]
 # -- need to check and confirm this isn't missing anything due to unexpected folder naming convention breaks
@@ -41,14 +41,14 @@ read_pdf_text <- function(file, target) {
     o <- capture.output(file_import <- pdf_text(file), type = "message")
     if (any(grepl("PDF error", o))) {
       cat(paste0(target, "\t", deparse(substitute(file)), " PDF error\n"),
-          file = "err.log",
+          file = "data/err.log",
           append = TRUE)
     }
     return(read_lines(toString(file_import)))
   },
   error = function(e) {
     cat(paste0(target, "\t", deparse(substitute(file)), " read error ", as.character(e), "\n"),
-        file = "err.log",
+        file = "data/err.log",
         append = TRUE)
     return(NULL)
   })
@@ -174,7 +174,7 @@ read_candidate_folder <- function(target) {
               years[[i]] <- NULL
             }
           }
-          cat(paste0(target, "\t", "too many rows in tax, but all three rows are identifiable\n"), file = "warn.log", append = TRUE)
+          cat(paste0(target, "\t", "too many rows in tax, but all three rows are identifiable\n"), file = "data/warn.log", append = TRUE)
         } else if (sum(map_lgl(years, ~ grepl("AOP Share", .x)[1])) == 3) {
           # Fix one candidate with "AOP SHARE"
           
@@ -182,15 +182,15 @@ read_candidate_folder <- function(target) {
             years[[i]][1, 1] <- paste0(years[[i]][1, 1], "\n", years[[i+1]][1, 1])
           }
           years[c(2, 4, 6)] <- NULL
-          cat(paste0(target, "\t", "too many rows in tax, but AOP share\n"), file = "warn.log", append = TRUE)
+          cat(paste0(target, "\t", "too many rows in tax, but AOP share\n"), file = "data/warn.log", append = TRUE)
         } else if (cand_meta[1, 5] == "NA-261-0007_5340382191767") {
           # Fix one candidate with "AOP SHARE"
           years[[1]][1, 1] <- paste0(years[[1]][1, 1], "\n", years[[2]][1, 1])
           years[[4]][1, 1] <- paste0(years[[4]][1, 1], "\n", years[[5]][1, 1])
           years[c(2, 5)] <- NULL
-          cat(paste0(target, "\t", "too many rows in tax, manual fix\n"), file = "warn.log", append = TRUE)
+          cat(paste0(target, "\t", "too many rows in tax, manual fix\n"), file = "data/warn.log", append = TRUE)
         } else {
-          cat(paste0(target, "\t", "too many rows in tax\n"), file = "err.log", append = TRUE)
+          cat(paste0(target, "\t", "too many rows in tax\n"), file = "data/err.log", append = TRUE)
           return(data.frame())
         }
       }
@@ -199,7 +199,7 @@ read_candidate_folder <- function(target) {
       # All examples showed a missing second year, adding NA, could check trailing WS to be 
       # more programmatic
       years <- list(years[[1]], matrix(rep(NA, 3), 1), years[[2]])
-      cat(paste0(target, "\t", "adding row of NA for presumed missing second year\n"), file = "warn.log", append = TRUE)
+      cat(paste0(target, "\t", "adding row of NA for presumed missing second year\n"), file = "data/warn.log", append = TRUE)
     }
     
     # check for filers for each year and bind the results together!
@@ -224,7 +224,7 @@ read_candidate_folder <- function(target) {
             # If the sequence of spaces is longer than 30, than its cols 1 + 3, with col 2 missing
             if (any(space_seqs$lengths[space_seqs$values == " "] > 40)) {
               tax_row <- c("Filer", year[1], NA, year[2])
-              cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "warn.log", append = TRUE)
+              cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "data/warn.log", append = TRUE)
             } else {
               # If space in between is X length, then its 1 and 3, if its
               # not, then it could be either 1 and 2 or 2 and 3, because of the
@@ -233,17 +233,17 @@ read_candidate_folder <- function(target) {
               # two have 1 and 2 and no 3, and one just has a really long third column
               if (any(space_seqs$lengths[space_seqs$values == " "] == 34)) {
                 tax_row <- c("Filer", year[1], NA, year[2])
-                cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "warn.log", append = TRUE)
+                cat(paste0(target, "\t", "guessing some col 2 missing\n"), file = "data/warn.log", append = TRUE)
               } else {
                 tax_row <- c("Filer", year[1], year[2], NA)
-                cat(paste0(target, "\t", "guessing col 3 missing\n"), file = "warn.log", append = TRUE)
+                cat(paste0(target, "\t", "guessing col 3 missing\n"), file = "data/warn.log", append = TRUE)
               }
 
             }
           } else {
             # So far all examples are only first cell filled in, if so, can do simple rule where all go to first position, otherwise have to count leading spaces and infer
             tax_row <- c("Filer", year[1], NA, NA)
-            cat(paste0(target, "\t", "only 1 col\n"), file = "warn.log", append = TRUE)
+            cat(paste0(target, "\t", "only 1 col\n"), file = "data/warn.log", append = TRUE)
           }
         }
       } else {
@@ -336,7 +336,7 @@ read_candidate_folder <- function(target) {
 # R wants you to use lapply, but let's use purrr, which is the "tidy" way to do this
 system.time({dat <- map_dfr(candidate_dirs, read_candidate_folder)})
 # 894 seconds
-write.csv(dat, file = "candidate_scrutiny_forms_2018.csv", row.names = FALSE)
+write.csv(dat, file = "data/scraped_scrutiny_forms.csv", row.names = FALSE)
 
 debugging <- FALSE
 if (debugging) {
@@ -349,50 +349,50 @@ if (debugging) {
   }
 
   # Invalid SBP PDF
-  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PAKM/PAKM-0022_1720184712651"
+  target <- "data/2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PAKM/PAKM-0022_1720184712651"
   # Forgot what bottom one's case was
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-265/NA-265-0019_5440005597555"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-265/NA-265-0019_5440005597555"
   # Multiple rows of text in some boxes
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
-  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-98/NA-98-0006_3810106314423" # first row
-  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189" # third row
-  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-19/PS-19-0014_4510136091983" # first and second
-  target <- "2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-15/PP-15-0011_3740552959443" # all three rows
-  target <- "2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-104/PP-104-0015_3310690883097" # long
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
+  target <- "data/2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-98/NA-98-0006_3810106314423" # first row
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189" # third row
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-19/PS-19-0014_4510136091983" # first and second
+  target <- "data/2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-15/PP-15-0011_3740552959443" # all three rows
+  target <- "data/2018 Candidate Scrutiny Forms/Punjab/Provincial Assembly/PP-104/PP-104-0015_3310690883097" # long
   
   # Missing middle cells, etc...
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-13/PB-13-0027_5340345710071"
-  target <- "2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-32/NA-32-0002_4200072543509"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-13/PB-13-0027_5340345710071"
+  target <- "data/2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-32/NA-32-0002_4200072543509"
   # Both of the above problems
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-261/NA-261-0007_5340382191767"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-261/NA-261-0007_5340382191767"
   # Only has first cell, non-zero, non-"Non-filer"
-  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-83/NA-83-0010_3410245994991"
-  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-200/NA-200-0024_4320364410531"
-  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-211/NA-211-0021_4530278910227"
-  target <- "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-236/NA-236-0013_1550108773695"
-  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-12/PS-12-0020_4320173014423"
+  target <- "data/2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-83/NA-83-0010_3410245994991"
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-200/NA-200-0024_4320364410531"
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-211/NA-211-0021_4530278910227"
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/National Assembly/NA-236/NA-236-0013_1550108773695"
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-12/PS-12-0020_4320173014423"
   # "missing" example
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NABW/NABW-0031_5440021680144"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NABW/NABW-0031_5440021680144"
   # "remarks" empty example
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PABM/PABM-0010_5130121369039"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PABM/PABM-0010_5130121369039"
   # Non-filer with 0s
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-272/NA-272-0023_5140169339383"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/National Assembly/NA-272/NA-272-0023_5140169339383"
   # Plain Non-filer
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-9/PB-9-0019_5520276709583"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-9/PB-9-0019_5520276709583"
   # too much data in tax form
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-15/PB-15-0016_5440028686619"
   # Example 0
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-3/PB-3-0016_5620117350297"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-3/PB-3-0016_5620117350297"
   # Has remarks that are meaningful
-  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-54/PK-54-0009_1610271708743"
-  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-86/PK-86-0026_6110171350283"
-  target <- "2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-91/PK-91-0019_1120104067713"
-  target <- "2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-5/PB-5-0010_5440074738019"
+  target <- "data/2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-54/PK-54-0009_1610271708743"
+  target <- "data/2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-86/PK-86-0026_6110171350283"
+  target <- "data/2018 Candidate Scrutiny Forms/KPK/Provincial Assembly/PK-91/PK-91-0019_1120104067713"
+  target <- "data/2018 Candidate Scrutiny Forms/Balochistan/Provincial Assembly/PB-5/PB-5-0010_5440074738019"
   # Too long of col 3 for whitespace check to work
-  target <- "2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-138/NA-138-0002_3510237042907"
-  target <-  "2018 Candidate Scrutiny Forms/Sindh/National Assembly/NASW (8)/NASW-0047_4210114071260"
+  target <- "data/2018 Candidate Scrutiny Forms/Punjab/National Assembly/NA-138/NA-138-0002_3510237042907"
+  target <-  "data/2018 Candidate Scrutiny Forms/Sindh/National Assembly/NASW (8)/NASW-0047_4210114071260"
 
-  target <- "2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189"
+  target <- "data/2018 Candidate Scrutiny Forms/Sindh/Provincial Assembly/PS-49/PS-49-0006_4230189906189"
   # Smarter debugging
   debugonce(read_candidate_folder)
   read_candidate_folder(target)

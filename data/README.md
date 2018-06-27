@@ -19,3 +19,5 @@ https://drive.google.com/drive/folders/1uTCZ5MkMdjT6YWen3GADLjpe7J8JmrZF?usp=sha
 
 For R code used to clean, consolidate, and tidy the pdf reports in this dataset and transform it into a consolidated .csv file output, see:
 https://github.com/colincookman/pakistan_2018_candidates
+
+To replicate our analysis, the files should be placed in this folder, the `data` folder, in a folder named `"2018 Candidate Scrutiny Forms"`.
