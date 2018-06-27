@@ -347,6 +347,7 @@ summary(unique(as.factor(candidate_df$candidate_CNIC_SBP[candidate_df$multi_cand
 # reorder columns -------------------------------------------------------------
 candidate_df <- dplyr::select(candidate_df,
   candidate_code, province, assembly, constituency_number, candidate_number,
+  tax_year,
   candidate_CNIC_FBR, candidate_CNIC_NAB, candidate_CNIC_SBP,
   candidate_MNIC_NAB, candidate_MNIC_SBP, candidate_NTN,
   candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
