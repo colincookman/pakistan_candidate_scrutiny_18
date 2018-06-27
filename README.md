@@ -5,7 +5,7 @@ This repository hosts open source R code used to scan, consolidate, tidy, and cl
 Please note that as of current writing this code is still a work in progress and data outputs hosted here are still incomplete. For questions, suggestions, or to contribute, please contact the contributors, Luke Sonnett and Colin Cookman.
 
 ## Data
-The raw files used as a data source are approximate 10.3 GB in size and too large to host in this Github repository; the data subfolder provides information on mirror hosts that can be used to obtain these original raw pdfs.
+The raw files used as a data source are approximately 10.3 GB in size and too large to host in this Github repository; the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) provides information on alternative mirror hosts that can be used to obtain these original raw pdfs.
 
 ## Variable key
 To be updated.
