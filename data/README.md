@@ -5,7 +5,7 @@ As part of the filing and scrutiny process for registered candidates for the 201
 ## Raw files
 
 The ECP released these files hosted through a publicly viewable Google Drive folder on its website on June 21, 2018. As of writing on June 26, 2018, these original files are accessible on the ECP webpage at this link: 
-https://www.ecp.gov.pk/frmGenericPage.aspx?PageID=3152 [Wayback Machine Reference](https://web.archive.org/web/20180627011544/https://www.ecp.gov.pk/frmGenericPage.aspx?PageID=3152)
+https://www.ecp.gov.pk/frmGenericPage.aspx?PageID=3152 ([Wayback Machine Reference](https://web.archive.org/web/20180627011544/https://www.ecp.gov.pk/frmGenericPage.aspx?PageID=3152))
 
 As a backup mirror, the files were downloaded directly from the ECP on June 24 2016. The unaltered zip files are stored and are available for download through this link: 
 https://drive.google.com/drive/folders/1Lin-DGGo7n4Eg5H7fXEloCIqRfBBGJwA?usp=sharing
