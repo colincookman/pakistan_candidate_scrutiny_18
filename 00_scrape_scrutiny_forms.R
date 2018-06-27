@@ -66,17 +66,17 @@ read_candidate_folder <- function(target) {
   cand_meta <- str_split(target, "/", simplify = TRUE)
   
   meta_dat <- data.frame(
-    province = cand_meta[1, 2],
-    assembly = cand_meta[1, 3]
+    province = cand_meta[1, 3],
+    assembly = cand_meta[1, 4]
   )
   
   if (meta_dat$province == "Minority") {
     meta_dat$constituency_number <- NA
-    meta_dat$candidate_number <- str_match(cand_meta[1, 4], "(?<=\\d\\-)(.*?)(?=\\_)")[1]
-  } else {
-    meta_dat$assembly <- cand_meta[1, 3]
-    meta_dat$constituency_number <- cand_meta[1, 4]
     meta_dat$candidate_number <- str_match(cand_meta[1, 5], "(?<=\\d\\-)(.*?)(?=\\_)")[1]
+  } else {
+    meta_dat$assembly <- cand_meta[1, 4]
+    meta_dat$constituency_number <- cand_meta[1, 5]
+    meta_dat$candidate_number <- str_match(cand_meta[1, 6], "(?<=\\d\\-)(.*?)(?=\\_)")[1]
   }
   
   # Get files from each admin. body
