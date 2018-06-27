@@ -392,11 +392,11 @@ candidate_code, province, assembly, constituency_number, candidate_number,
 # candidate meta
 candidate_CNIC_ECP, # dropping candidate_CNIC_FBR, candidate_CNIC_NAB, and candidate_CNIC_SBP
 multi_candidate,
-candidate_NTN, 
+candidate_NTN, candidate_NTN_issue, candidate_RTO,
 candidate_MNIC_NAB, candidate_MNIC_SBP,
 # tax data
 tax_year,
-candidate_tax_type, candidate_NTN_issue, candidate_RTO,
+candidate_tax_type,
 candidate_tax_paid, candidate_tax_paid_num, 
 candidate_tax_receipts, candidate_tax_receipts_num,
 candidate_tax_income, candidate_tax_income_num,
@@ -436,12 +436,43 @@ aggregate_filing_count <- constituency_filing_count %>% group_by(province, assem
   )
 
 # search for possible missing candidate forms in available sequence -----------
-# TODO
+# I think this is not the smoothest way to do it, and it is not working properly for minority candidates
 
 candidate_lists <- candidate_df %>% group_by(constituency_number) %>% dplyr::select(candidate_code, candidate_number)
 candidate_lists <- candidate_lists[!duplicated(candidate_lists$candidate_code), 1:3]
 
+constituency_list <- subset(candidate_lists, constituency_number != "Womens List")
+constituency_list <- subset(constituency_list, constituency_number != "Minority List")
+# TODO - have to handle these separately because they need to be grouped by province + assembly
 
+constituency_list <- unique(constituency_list$constituency_number)
+out <- NA
+
+for(i in c(1:length(constituency_list))) {
+constituency <- constituency_list[i]
+constituency_report <- candidate_lists[candidate_lists$constituency_number == constituency, ]
+max_filings <- length(constituency_report$candidate_number)
+constituency_filings <- constituency_report$candidate_number
+check <- as.numeric(setdiff(1:max_filings, constituency_filings))
+
+if(length(check) > 0) {
+  for(j in seq_along(check)) {
+    temp <- paste(c(constituency, check[j]), sep = "-")
+    out <- rbind(out, temp)
+  }
+}
+
+else {
+check <- NA  
+}
+}
+
+out <- data.frame(out)
+out <- out[-1, ] # remove starting value
+missing_filings <- paste(as.character(out$X1), as.character(out$X2), sep = "-")
+write.csv(missing_filings, file = "data/filing_sequence_gaps.csv", row.names = FALSE, col.names = FALSE)
+
+# TODO INVESTIGATE - are these filings the wrong folder or mislabeled somewhere or just not provided by ECP?
 
 # re-write csv for final output -----------------------------------------------
 

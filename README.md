@@ -2,7 +2,7 @@
 
 This repository hosts open source R code used to scan, consolidate, tidy, and clean candidate scrutiny forms released by the Election Commission of Pakistan for prospective candidates for Pakistan's 2018 national and provincial assembly elections. The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018.csv).
 
-For questions, suggestions, or to contribute, please leave an issue here or contact the contributors, Luke Sonnet and Colin Cookman.
+Please note that as of current writing this code is still a work in progress and data outputs hosted here are still incomplete. For questions, suggestions, or to contribute, please leave an issue here or contact the contributors, Luke Sonnet and Colin Cookman.
 
 ## Data
 The raw files used as a data source are approximately 10.3 GB in size and too large to host in this Github repository; the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) provides information on alternative mirror hosts that can be used to obtain these original raw pdfs.
@@ -15,9 +15,9 @@ Once the data are downloaded to `data/2018 Candidate Scrutiny Forms` following t
 * Run `01_clean_scrutiny_data.R` to clean up and standardize the scraped data
 
 ## Scope and possible gaps in data
-Pakistani election law does not impose residency requirements for candidacy filings and allows individual candidates to contest multiple seats simultaneously, within and across assemblies and provinces. As of the initial data release the ECP provided information for 19397 candidacy filings and 15904 unique candidates (as identified by accompanying Computerized National ID Card records). 
+Pakistani election law does not impose residency requirements for candidacy filings and allows individual candidates to contest multiple seats simultaneously, within and across assemblies and provinces. As of the initial data release the ECP provided information for 19397 candidacy filings and 15904 unique candidates (as identified by accompanying Computerized National ID Card records). Note that in some cases individual records reported by the FBR, NAB, and SBP may not be consistent across multiple constituency filings.
 
-### Candidacy filing counts
+### Candidacy filing counts based on available data
 | province    | assembly            | direct_seats | womens_seats | minority_seats | 
 |-------------|---------------------|--------------|--------------|----------------| 
 | Balochistan | National Assembly   | 373          | 40           | NA             | 
@@ -47,13 +47,45 @@ The ECP had [previously reported](https://www.ecp.gov.pk/PrintDocument.aspx?Pres
 | Sindh       | National Assembly   | 1346 (-165)  | 76 (+102)    | NA             | 
 | Sindh       | Provincial Assembly | 3626 (-711)  | 213 (-119)   | 110 (-54)      | 
 
-
 A final list of candidates following the process of scrutiny, disqualification, appeal, and withdrawal is currently [scheduled for release](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55262&type=Image) by the ECP on June 30 2018 which may allow for some retroactive analysis to identify missing filing data.
-
-
-## Output variable key
-TODO
 
 
 ## Caveats
 This dataset is being presented to encourage broader open data sharing among the community of analysts on Pakistan. We make no guarantees as to and cannot verify the accuracy of, or account for any discrepancies in, the underlying data.
+
+## pk_candidate_scrutiny_data_2018.csv variable key
+
+**candidate_code:** Candidacy filing code generated from constituency and candidate number (not unique to single individuals)
+**province:** Province location (note that former FATA constituencies are included in KPK, and Islamabad constituencies in Punjab)
+**assembly:** National or provincial assembly
+**constituency_number:** Constituency number for directly elected seats or womens / minorities reserved list
+**candidate_number:** ECP-assigned candidacy filing number
+**candidate_CNICP_ECP:** ECP-reported Computerized National ID Card, unique to single individuals
+**multi_candidate:** Flags individuals that are contesting multiple constituencies
+**candidate_NTN:** Candidate National Tax Number as reported by Federal Board of Revenue
+**candidate_NTN_issue:** Date of NTN issue as reported by Federal Board of Revenue
+**candidate_RTO:** Location of NTN-issuing Regional Tax Office as reported by Federal Board of Revenue
+**candidate_MNIC_NAB:** Candidate Manual National ID Card as reported by the NAB
+**candidate_MNIC_SBP:** Candidate Manual National ID Card as reported by the SBP
+**tax_year:** Tax-year observation (2015, 2016, or 2017)
+**candidate_tax_type:** Candidate filed, did not file, or was unregistered
+**candidate_tax-paid:** Tax paid by candidate as reported by FBR
+**candidate_tax_paid_num:** Tax paid converted to numeric values for calculation
+**candidate_tax_receipts:** "Receipts under final tax regime" as reported by FBR
+**candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation
+**candidate_tax_income:** Taxable income as reported by FBR
+**candidate_tax_income_num:** Taxable income converted to numeric values for calculation
+**candidate_tax_remarks:** Additional remarks as reported by FBR
+**candidate_NAB_guilty:** Binary variable if NAB reported any conviction, plea bargain, or other pending case against candidate
+**candidate_NAB_conviction:** Binary variable if NAB reported any conviction against candidate
+**candidate_NAB_plea:** Binary variable if NAB reported any plea bargain on the part of candidate
+**candidate_NAB_accused:** Binary variable if NAB reported candidate accused or otherwise facing pending cases
+**candidate_NAB_remarks:** NAB remarks on any 
+**candidate_personal_loan:** SBP remarks on candidate personal loans, if any reported
+**candidate_business_loan:** SBP remarks on candidate business loans, if any reported
+**candidate_name_FBR:** Candidate name as reported by FBR in Urdu unicode
+**candidate_name_NAB:** Candidate name as reported by NAB in Urdu unicode
+**candidate_name_SBP:** Candidate name as reported by SBP in Roman Urdu (note: SBP forms did not report name information consistently)
+**urdu_name_match:** Check on whether FBR and NAB Urdu names match (several cases indicate mismatch, apparently due to typos or nonstandardized name spellings)
+**MNIC_match:** Check on whether NAB and SBP MNIC identifications match
+**target:** Directory path for folder with candidate data
