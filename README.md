@@ -56,36 +56,69 @@ This dataset is being presented to encourage broader open data sharing among the
 ## pk_candidate_scrutiny_data_2018.csv variable key
 
 **candidate_code:** Candidacy filing code generated from constituency and candidate number (not unique to single individuals)
+
 **province:** Province location (note that former FATA constituencies are included in KPK, and Islamabad constituencies in Punjab)
+
 **assembly:** National or provincial assembly
+
 **constituency_number:** Constituency number for directly elected seats or womens / minorities reserved list
+
 **candidate_number:** ECP-assigned candidacy filing number
+
 **candidate_CNICP_ECP:** ECP-reported Computerized National ID Card, unique to single individuals
+
 **multi_candidate:** Flags individuals that are contesting multiple constituencies
+
 **candidate_NTN:** Candidate National Tax Number as reported by Federal Board of Revenue
+
 **candidate_NTN_issue:** Date of NTN issue as reported by Federal Board of Revenue
+
 **candidate_RTO:** Location of NTN-issuing Regional Tax Office as reported by Federal Board of Revenue
+
 **candidate_MNIC_NAB:** Candidate Manual National ID Card as reported by the NAB
+
 **candidate_MNIC_SBP:** Candidate Manual National ID Card as reported by the SBP
+
 **tax_year:** Tax-year observation (2015, 2016, or 2017)
+
 **candidate_tax_type:** Candidate filed, did not file, or was unregistered
+
 **candidate_tax-paid:** Tax paid by candidate as reported by FBR
+
 **candidate_tax_paid_num:** Tax paid converted to numeric values for calculation
+
 **candidate_tax_receipts:** "Receipts under final tax regime" as reported by FBR
+
 **candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation
+
 **candidate_tax_income:** Taxable income as reported by FBR
+
 **candidate_tax_income_num:** Taxable income converted to numeric values for calculation
+
 **candidate_tax_remarks:** Additional remarks as reported by FBR
+
 **candidate_NAB_guilty:** Binary variable if NAB reported any conviction, plea bargain, or other pending case against candidate
+
 **candidate_NAB_conviction:** Binary variable if NAB reported any conviction against candidate
+
 **candidate_NAB_plea:** Binary variable if NAB reported any plea bargain on the part of candidate
+
 **candidate_NAB_accused:** Binary variable if NAB reported candidate accused or otherwise facing pending cases
+
 **candidate_NAB_remarks:** NAB remarks on any 
+
 **candidate_personal_loan:** SBP remarks on candidate personal loans, if any reported
+
 **candidate_business_loan:** SBP remarks on candidate business loans, if any reported
+
 **candidate_name_FBR:** Candidate name as reported by FBR in Urdu unicode
+
 **candidate_name_NAB:** Candidate name as reported by NAB in Urdu unicode
+
 **candidate_name_SBP:** Candidate name as reported by SBP in Roman Urdu (note: SBP forms did not report name information consistently)
+
 **urdu_name_match:** Check on whether FBR and NAB Urdu names match (several cases indicate mismatch, apparently due to typos or nonstandardized name spellings)
+
 **MNIC_match:** Check on whether NAB and SBP MNIC identifications match
+
 **target:** Directory path for folder with candidate data
