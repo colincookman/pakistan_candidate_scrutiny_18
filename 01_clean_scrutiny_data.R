@@ -13,7 +13,10 @@ candidate_df <- candidate_import
 # ECP included duplicate copies of the following KPK Provincial Assembly candidate filings in the KPK National Assembly folder - cutting from list
 # PK-1-27, PK-23-11, PK-52-21, PK-6-25, PK-83-25
 
-candidate_df <- subset(candidate_df, !(candidate_df$assembly == "National Assembly" & grepl("PK-", candidate_df$constituency_number)))
+candidate_df <- subset(
+  candidate_df,
+  !(candidate_df$assembly == "National Assembly" & grepl("PK-", candidate_df$constituency_number))
+)
 
 # The PP-9 folder is also housing lots of duplicate data folders, including some from totally different constituencies -- all of these appear to
 # exist in their proper homes, so removing these instances
@@ -387,30 +390,30 @@ candidate_df <- left_join(candidate_df, multi_candidate, by = "candidate_CNIC_EC
 
 # reorder columns -------------------------------------------------------------
 candidate_df <- dplyr::select(candidate_df,
-# constituency meta
-candidate_code, province, assembly, constituency_number, candidate_number,
-# candidate meta
-candidate_CNIC_ECP, # dropping candidate_CNIC_FBR, candidate_CNIC_NAB, and candidate_CNIC_SBP
-multi_candidate,
-candidate_NTN, candidate_NTN_issue, candidate_RTO,
-candidate_MNIC_NAB, candidate_MNIC_SBP,
-# tax data
-tax_year,
-candidate_tax_type,
-candidate_tax_paid, candidate_tax_paid_num, 
-candidate_tax_receipts, candidate_tax_receipts_num,
-candidate_tax_income, candidate_tax_income_num,
-candidate_tax_remarks,
-# NAB data
-candidate_NAB_guilty, candidate_NAB_conviction, candidate_NAB_plea, candidate_NAB_accused,
-candidate_NAB_remarks,
-# SBP data
-candidate_personal_loan, candidate_business_loan,
-# additional metadata
-candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
-urdu_name_match, 
-MNIC_match,
-target
+  # constituency meta
+  candidate_code, province, assembly, constituency_number, candidate_number,
+  # candidate meta
+  candidate_CNIC_ECP, # dropping candidate_CNIC_FBR, candidate_CNIC_NAB, and candidate_CNIC_SBP
+  multi_candidate,
+  candidate_NTN, candidate_NTN_issue, candidate_RTO,
+  candidate_MNIC_NAB, candidate_MNIC_SBP,
+  # tax data
+  tax_year,
+  candidate_tax_type,
+  candidate_tax_paid, candidate_tax_paid_num, 
+  candidate_tax_receipts, candidate_tax_receipts_num,
+  candidate_tax_income, candidate_tax_income_num,
+  candidate_tax_remarks,
+  # NAB data
+  candidate_NAB_guilty, candidate_NAB_conviction, candidate_NAB_plea, candidate_NAB_accused,
+  candidate_NAB_remarks,
+  # SBP data
+  candidate_personal_loan, candidate_business_loan,
+  # additional metadata
+  candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
+  urdu_name_match, 
+  MNIC_match,
+  target
 )
 
 candidate_df <- dplyr::arrange(candidate_df, candidate_code)
@@ -422,13 +425,15 @@ candidate_df <- dplyr::arrange(candidate_df, candidate_code)
 
 # summary counts --------------------------------------------------------------
 
-constituency_filing_count <- unique_filings %>% group_by(province, assembly, constituency_number) %>%
-  summarize(
-    count = n()
-  )
+constituency_filing_count <- unique_filings %>% 
+  group_by(province, assembly, constituency_number) %>%
+  summarize(count = n())
+table(constituency_filing_count$assembly)
+
 write.csv(constituency_filing_count, file = "data/constituency_filing_count.csv", row.names = FALSE)
 
-aggregate_filing_count <- constituency_filing_count %>% group_by(province, assembly) %>%
+aggregate_filing_count <- constituency_filing_count %>% 
+  group_by(province, assembly) %>%
   summarize(
     direct_seats = sum(count[constituency_number != "Womens List" & constituency_number != "Minority List"]),
     womens_seats = sum(count[constituency_number == "Womens List"]),
@@ -438,7 +443,18 @@ aggregate_filing_count <- constituency_filing_count %>% group_by(province, assem
 # search for possible missing candidate forms in available sequence -----------
 # I think this is not the smoothest way to do it, and it is not working properly for minority candidates
 
-candidate_lists <- candidate_df %>% group_by(constituency_number) %>% dplyr::select(candidate_code, candidate_number)
+# CC: Here's what I came up with
+missing_cands <- candidate_df %>%
+  group_by(province, assembly, constituency_number) %>%
+  summarize(missing_candidate_number = list(setdiff(seq_len(max(candidate_number)), candidate_number))) %>% # note I use max(candidate_number), not length(candidate_number) as that seems that it would be too low
+  unnest() %>%
+  mutate(candidate_code = paste0(constituency_number, "-", missing_candidate_number))
+filter(missing_cands, constituency_number=="Womens List") # looks like it works for owmen
+
+## CC: should be able to delete the rest
+candidate_lists <- candidate_df %>%
+  group_by(constituency_number) %>% 
+  dplyr::select(candidate_code, candidate_number)
 candidate_lists <- candidate_lists[!duplicated(candidate_lists$candidate_code), 1:3]
 
 constituency_list <- subset(candidate_lists, constituency_number != "Womens List")
@@ -447,24 +463,21 @@ constituency_list <- subset(constituency_list, constituency_number != "Minority 
 
 constituency_list <- unique(constituency_list$constituency_number)
 out <- NA
-
-for(i in c(1:length(constituency_list))) {
-constituency <- constituency_list[i]
-constituency_report <- candidate_lists[candidate_lists$constituency_number == constituency, ]
-max_filings <- length(constituency_report$candidate_number)
-constituency_filings <- constituency_report$candidate_number
-check <- as.numeric(setdiff(1:max_filings, constituency_filings))
-
-if(length(check) > 0) {
-  for(j in seq_along(check)) {
-    temp <- paste(c(constituency, check[j]), sep = "-")
-    out <- rbind(out, temp)
+for (i in c(1:length(constituency_list))) {
+  constituency <- constituency_list[i]
+  constituency_report <- candidate_lists[candidate_lists$constituency_number == constituency, ]
+  max_filings <- length(constituency_report$candidate_number)
+  constituency_filings <- constituency_report$candidate_number
+  check <- as.numeric(setdiff(1:max_filings, constituency_filings))
+  
+  if (length(check) > 0) {
+    for(j in seq_along(check)) {
+      temp <- paste(c(constituency, check[j]), sep = "-")
+      out <- rbind(out, temp)
+    }
+  } else {
+    check <- NA  
   }
-}
-
-else {
-check <- NA  
-}
 }
 
 out <- data.frame(out)
@@ -473,6 +486,8 @@ missing_filings <- paste(as.character(out$X1), as.character(out$X2), sep = "-")
 write.csv(missing_filings, file = "data/filing_sequence_gaps.csv", row.names = FALSE, col.names = FALSE)
 
 # TODO INVESTIGATE - are these filings the wrong folder or mislabeled somewhere or just not provided by ECP?
+
+#
 
 # re-write csv for final output -----------------------------------------------
 
