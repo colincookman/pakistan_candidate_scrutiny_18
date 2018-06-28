@@ -47,7 +47,9 @@ The ECP had [previously reported](https://www.ecp.gov.pk/PrintDocument.aspx?Pres
 | Sindh       | National Assembly   | 1346 (-165)  | 76 (+102)    | NA             | 
 | Sindh       | Provincial Assembly | 3626 (-711)  | 213 (-119)   | 110 (-54)      | 
 
-A final list of candidates following the process of scrutiny, disqualification, appeal, and withdrawal is currently [scheduled for release](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55262&type=Image) by the ECP on June 30 2018 which may allow for some retroactive analysis to identify missing filing data. The [filing_sequence_gaps.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/filing_sequence_gaps.csv) table in the data subfolder identifies candidate numbers missing in the available candidate number sequence as released by the ECP as a possible focus for future investigation.
+A final list of candidates following the process of scrutiny, disqualification, appeal, and withdrawal is currently [scheduled for release](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55262&type=Image) by the ECP on June 30 2018 which may allow for some retroactive analysis to identify missing filing data. 
+
+As a possible focus for future investigation, the [filing_sequence_gaps.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/filing_sequence_gaps.csv) file in the data subfolder identifies candidate numbers missing in the available candidate number sequence as released by the ECP.
 
 ## Caveats
 This dataset is being presented to encourage broader open data sharing among the community of analysts on Pakistan. We make no guarantees as to and cannot verify the accuracy of, or account for any discrepancies in, the underlying data.
