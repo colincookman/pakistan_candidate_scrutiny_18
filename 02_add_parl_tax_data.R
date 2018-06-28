@@ -19,6 +19,5 @@ parl_df <- parl_df %>%
 
 test2 <- merge(candidate_df, select(parl_df, CNIC, parl_tax_paid, parl_constituency), by.x = "candidate_CNIC_ECP", by.y = "CNIC", all.x = TRUE)
 
-
 with(test2[test2$tax_year == 2016, ], plot(log(parl_tax_paid+1), log(candidate_tax_paid_num+1), col = rgb(0, 0, 0, 0.2)))
 abline(a = 0, b  = 1)

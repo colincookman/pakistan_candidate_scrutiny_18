@@ -492,3 +492,16 @@ write.csv(missing_filings, file = "data/filing_sequence_gaps.csv", row.names = F
 # re-write csv for final output -----------------------------------------------
 
 write.csv(candidate_df, file = "pk_candidate_scrutiny_data_2018.csv", row.names = FALSE)
+
+# Create wide version
+names(candidate_df)
+candidate_df$candidate_tax
+candidate_df_wide <- candidate_df %>%
+  gather(tax_variable, tax_value, -(candidate_NAB_guilty:target), -(candidate_code:tax_year)) %>%
+  unite(tax_var, tax_year, tax_variable) %>%
+  spread(tax_var, tax_value)
+head(candidate_df_wide)
+nrow(candidate_df_wide)
+nrow(candidate_df) / 3
+
+write.csv(candidate_df_wide, file = "pk_candidate_scrutiny_data_2018_wide.csv", row.names = FALSE)
