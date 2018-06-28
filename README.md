@@ -1,8 +1,8 @@
 # Pakistan 2018 General Elections Candidate Scrutiny Forms
 
-This repository hosts open source R code used to scan, consolidate, tidy, and clean candidate scrutiny forms released by the Election Commission of Pakistan for prospective candidates for Pakistan's 2018 national and provincial assembly elections. The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018.csv).
+This repository hosts open source R code used to scan, consolidate, tidy, and clean candidate scrutiny forms released by the Election Commission of Pakistan for prospective candidates for Pakistan's 2018 national and provincial assembly elections. The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018.csv), or in wide format (collapsing three tax-year rows per candidate into a single row) as [pk_candidate_scrutiny_data_2018_wide.csv]((https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018_wide.csv).
 
-Please note that as of current writing this code is still a work in progress and data outputs hosted here are still incomplete. For questions, suggestions, or to contribute, please leave an issue here or contact the contributors, Luke Sonnet and Colin Cookman.
+Please note that this code is still a work in progress and data outputs hosted here may be incomplete. For questions, suggestions, or to contribute, please leave an issue here or contact the contributors, Luke Sonnet and Colin Cookman.
 
 ## Data
 The raw files used as a data source are approximately 10.3 GB in size and too large to host in this Github repository; the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) provides information on alternative mirror hosts that can be used to obtain these original raw pdfs.
@@ -30,7 +30,7 @@ Pakistani election law does not impose residency requirements for candidacy fili
 | Sindh       | National Assembly   | 1181         | 178          | NA             | 
 | Sindh       | Provincial Assembly | 2915         | 94           | 56             | 
 
-(A constituency-level summary of candidacy filing reports can be found [here](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/constituency_filing_count.csv) in the data folder.)
+(A constituency-level summary count of candidacy filing reports can be found [here](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/constituency_filing_count.csv) in the data folder.)
 
 The ECP had [previously reported](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55295&type=Image) on June 18 2018 ([Wayback Ref](https://web.archive.org/web/20180627164802/https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55295&type=Image)) that 21482 nomination papers had been filed. While we cannot account for the discrepancy or identify missing candidates at this stage, based on the ECP's earlier aggregate figures the following number of candidacy filings may be missing from the current dataset (or not accounted for in the earlier ECP statement in cases where more records were available):
 
@@ -47,8 +47,7 @@ The ECP had [previously reported](https://www.ecp.gov.pk/PrintDocument.aspx?Pres
 | Sindh       | National Assembly   | 1346 (-165)  | 76 (+102)    | NA             | 
 | Sindh       | Provincial Assembly | 3626 (-711)  | 213 (-119)   | 110 (-54)      | 
 
-A final list of candidates following the process of scrutiny, disqualification, appeal, and withdrawal is currently [scheduled for release](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55262&type=Image) by the ECP on June 30 2018 which may allow for some retroactive analysis to identify missing filing data.
-
+A final list of candidates following the process of scrutiny, disqualification, appeal, and withdrawal is currently [scheduled for release](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55262&type=Image) by the ECP on June 30 2018 which may allow for some retroactive analysis to identify missing filing data. The [filing_sequence_gaps.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/filing_sequence_gaps.csv) table in the data subfolder identifies candidate numbers missing in the available candidate number sequence as released by the ECP as a possible focus for future investigation.
 
 ## Caveats
 This dataset is being presented to encourage broader open data sharing among the community of analysts on Pakistan. We make no guarantees as to and cannot verify the accuracy of, or account for any discrepancies in, the underlying data.

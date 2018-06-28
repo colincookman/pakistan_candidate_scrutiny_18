@@ -3,6 +3,7 @@
 # ----------
 
 library(tidyverse)
+library(stringr)
 
 candidate_import <- read.csv("data/scraped_scrutiny_forms.csv", stringsAsFactors = FALSE)
 candidate_df <- candidate_import
@@ -449,41 +450,9 @@ missing_cands <- candidate_df %>%
   summarize(missing_candidate_number = list(setdiff(seq_len(max(candidate_number)), candidate_number))) %>% # note I use max(candidate_number), not length(candidate_number) as that seems that it would be too low
   unnest() %>%
   mutate(candidate_code = paste0(constituency_number, "-", missing_candidate_number))
-filter(missing_cands, constituency_number=="Womens List") # looks like it works for owmen
+# filter(missing_cands, constituency_number=="Womens List")
 
-## CC: should be able to delete the rest
-candidate_lists <- candidate_df %>%
-  group_by(constituency_number) %>% 
-  dplyr::select(candidate_code, candidate_number)
-candidate_lists <- candidate_lists[!duplicated(candidate_lists$candidate_code), 1:3]
-
-constituency_list <- subset(candidate_lists, constituency_number != "Womens List")
-constituency_list <- subset(constituency_list, constituency_number != "Minority List")
-# TODO - have to handle these separately because they need to be grouped by province + assembly
-
-constituency_list <- unique(constituency_list$constituency_number)
-out <- NA
-for (i in c(1:length(constituency_list))) {
-  constituency <- constituency_list[i]
-  constituency_report <- candidate_lists[candidate_lists$constituency_number == constituency, ]
-  max_filings <- length(constituency_report$candidate_number)
-  constituency_filings <- constituency_report$candidate_number
-  check <- as.numeric(setdiff(1:max_filings, constituency_filings))
-  
-  if (length(check) > 0) {
-    for(j in seq_along(check)) {
-      temp <- paste(c(constituency, check[j]), sep = "-")
-      out <- rbind(out, temp)
-    }
-  } else {
-    check <- NA  
-  }
-}
-
-out <- data.frame(out)
-out <- out[-1, ] # remove starting value
-missing_filings <- paste(as.character(out$X1), as.character(out$X2), sep = "-")
-write.csv(missing_filings, file = "data/filing_sequence_gaps.csv", row.names = FALSE, col.names = FALSE)
+write.csv(missing_cands, file = "data/filing_sequence_gaps.csv", row.names = FALSE)
 
 # TODO INVESTIGATE - are these filings the wrong folder or mislabeled somewhere or just not provided by ECP?
 
