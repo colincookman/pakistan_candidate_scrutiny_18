@@ -30,7 +30,7 @@ Pakistani election law does not impose residency requirements for candidacy fili
 | Sindh       | National Assembly   | 1181         | 178          | NA             | 
 | Sindh       | Provincial Assembly | 2915         | 94           | 56             | 
 
-(A constituency-level summary of candidacy filing reports can be found [here]([pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/constituency_filing_count.csv) in the data folder.)
+(A constituency-level summary of candidacy filing reports can be found [here](https://github.com/colincookman/pakistan_2018_candidates/blob/master/data/constituency_filing_count.csv) in the data folder.)
 
 The ECP had [previously reported](https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55295&type=Image) on June 18 2018 ([Wayback Ref](https://web.archive.org/web/20180627164802/https://www.ecp.gov.pk/PrintDocument.aspx?PressId=55295&type=Image)) that 21482 nomination papers had been filed. While we cannot account for the discrepancy or identify missing candidates at this stage, based on the ECP's earlier aggregate figures the following number of candidacy filings may be missing from the current dataset (or not accounted for in the earlier ECP statement in cases where more records were available):
 
