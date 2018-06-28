@@ -96,7 +96,7 @@ read_candidate_folder <- function(target) {
     full.names = TRUE)
   
   # CC: Skip for now if empty while it syncs
-  if (length(FBR) == 0 | length(NAB) == 0 | length(SBP) == 0) {
+  if (length(FBR) == 0 | length(NAB) == 0) {
     cat(paste0(target, "\tmissing a file\n"), file = "missing.log", append = TRUE)
     return(data.frame())
   }
@@ -183,8 +183,7 @@ read_candidate_folder <- function(target) {
           }
           years[c(2, 4, 6)] <- NULL
           cat(paste0(target, "\t", "too many rows in tax, but AOP share\n"), file = "data/warn.log", append = TRUE)
-        } else if (cand_meta[1, 5] == "NA-261-0007_5340382191767") {
-          # Fix one candidate with "AOP SHARE"
+        } else if (cand_meta[1, 6] == "NA-261-0007_5340382191767") {
           years[[1]][1, 1] <- paste0(years[[1]][1, 1], "\n", years[[2]][1, 1])
           years[[4]][1, 1] <- paste0(years[[4]][1, 1], "\n", years[[5]][1, 1])
           years[c(2, 5)] <- NULL
@@ -279,9 +278,14 @@ read_candidate_folder <- function(target) {
   # SBP form import -------------------------------------------------------------
   
   SBP_text <- read_pdf_text(SBP, target)
-  if (!is.character(SBP_text)) return(data.frame())
-  
-  
+  if (!is.character(SBP_text)) {
+  SBP_dat <- data.frame(
+    candidate_CNIC_SBP = NA,
+    candidate_MNIC_SBP = NA,
+    candidate_name_SBP = NA,
+    candidate_loan_info = NA
+  )
+  } else {
   CNIC_row <- grep("CNIC of Candidate:", SBP_text)
   MNIC_row <- grep("MNIC of Candidate:", SBP_text)
   
@@ -304,6 +308,7 @@ read_candidate_folder <- function(target) {
   candidate_loan_info <- trimws(SBP_text[Loan_info_rows])
   SBP_dat$candidate_loan_info <- paste(candidate_loan_info, collapse = " ")
   # again just taking raw text for now until can work out the possible outputs and patterns in this section
+  }
   
   # Combine all form data -------------------------------------------------------
   
