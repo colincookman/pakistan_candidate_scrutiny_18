@@ -498,7 +498,7 @@ names(candidate_df)
 candidate_df$candidate_tax
 candidate_df_wide <- candidate_df %>%
   gather(tax_variable, tax_value, -(candidate_NAB_guilty:target), -(candidate_code:tax_year)) %>%
-  unite(tax_var, tax_year, tax_variable) %>%
+  unite(tax_var, tax_variable, tax_year) %>%
   spread(tax_var, tax_value)
 head(candidate_df_wide)
 nrow(candidate_df_wide)
