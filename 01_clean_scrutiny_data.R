@@ -9,7 +9,7 @@ candidate_import <- read.csv("data/scraped_scrutiny_forms.csv", stringsAsFactors
 candidate_df <- candidate_import
 
 # ----------
-# Cut duplicate data
+# Cut some duplicate or misfiled data
 # ----------
 # ECP included duplicate copies of the following KPK Provincial Assembly candidate filings in the KPK National Assembly folder - cutting from list
 # PK-1-27, PK-23-11, PK-52-21, PK-6-25, PK-83-25
@@ -25,6 +25,17 @@ candidate_df <- subset(
 temp <- filter(candidate_df, constituency_number == "PP-9")
 temp <- filter(temp, is.na(temp$candidate_number))
 candidate_df <- candidate_df[!(candidate_df$target %in% temp$target), ]
+
+# NA-92 filings listed as being part of KPK are a misfiled duplicate folder and can be deleted
+
+candidate_df <- candidate_df[!(grepl("NA-92", candidate_df$constituency_number) & grepl("KPK", candidate_df$province)), ]
+
+# NA-41-1, NA-41-14, and NA-41-20 are duplicated in the NA-40 folder and can be deleted
+
+candidate_df <- candidate_df[!(grepl("data/2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-41/NA-40-0001_2110519937741", candidate_df$target)), ]
+candidate_df <- candidate_df[!(grepl("data/2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-41/NA-40-0014_2110353189415", candidate_df$target)), ]
+candidate_df <- candidate_df[!(grepl("data/2018 Candidate Scrutiny Forms/KPK/National Assembly/NA-41/NA-40-0020_2110366405785", candidate_df$target)), ]
+
 
 # ----------
 # Clean candidate metadata
@@ -349,9 +360,12 @@ candidate_df <- candidate_df %>% mutate(
   MNIC_match = ifelse(as.character(candidate_MNIC_NAB) != as.character(candidate_MNIC_SBP), "MNIC Mismatch", "MNIC Match")
 )
 
-# TODO INVESTIGATE mismatches (just 9 unique cases)
-# CC: btw here is a nice way to open some pdfs quickly
-map(candidate_df$target[candidate_df$MNIC_match == "MNIC Mismatch"], open)
+# PP-177-15 -- SBP MNIC missing last two digits of NAB MNIC
+# PP-32-1 -- NAB form data does match with FBR or SBP by name, CNIC, or MNIC (but NAB metadata indicates this is for PP-32-1)
+# PP-32-2 -- NAB form data does match with FBR or SBP by name, CNIC, or MNIC (but NAB metadata indicates this is for PP-32-2)
+# PS-9-19 -- SBP MNIC missing last two digits of NAB MNIC
+# PS-88-09 -- SBP MNIC missing last two digits of NAB MNIC
+# PS-91-18 -- SBP MNIC missing last two digits of NAB MNIC
 
 # establish candidate UIDs to identify multi-constituency contestants ------------
 
@@ -419,10 +433,16 @@ candidate_df <- dplyr::select(candidate_df,
 
 candidate_df <- dplyr::arrange(candidate_df, candidate_code)
 
-# TODO -- possible other variables to drop from final:
-# MNIC_ match checks
-# FBR Urdu name (multiple apparent match errors with NAB)
-# urdu_name_match if we drop FBR
+# search for possible missing candidate forms in available sequence -----------
+
+missing_cands <- candidate_df %>%
+  group_by(province, assembly, constituency_number) %>%
+  summarize(missing_candidate_number = list(setdiff(seq_len(max(candidate_number)), candidate_number))) %>% 
+  unnest() %>%
+  mutate(candidate_code = paste0(constituency_number, "-", missing_candidate_number))
+
+write.csv(missing_cands, file = "data/filing_sequence_gaps.csv", row.names = FALSE)
+
 
 # summary counts --------------------------------------------------------------
 
@@ -440,21 +460,6 @@ aggregate_filing_count <- constituency_filing_count %>%
     womens_seats = sum(count[constituency_number == "Womens List"]),
     minority_seats = sum(count[constituency_number == "Minority List"])
   )
-
-# search for possible missing candidate forms in available sequence -----------
-# I think this is not the smoothest way to do it, and it is not working properly for minority candidates
-
-# CC: Here's what I came up with
-missing_cands <- candidate_df %>%
-  group_by(province, assembly, constituency_number) %>%
-  summarize(missing_candidate_number = list(setdiff(seq_len(max(candidate_number)), candidate_number))) %>% # note I use max(candidate_number), not length(candidate_number) as that seems that it would be too low
-  unnest() %>%
-  mutate(candidate_code = paste0(constituency_number, "-", missing_candidate_number))
-# filter(missing_cands, constituency_number=="Womens List")
-
-write.csv(missing_cands, file = "data/filing_sequence_gaps.csv", row.names = FALSE)
-
-# TODO INVESTIGATE - are these filings the wrong folder or mislabeled somewhere or just not provided by ECP?
 
 #
 
