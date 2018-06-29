@@ -56,5 +56,5 @@ parl_df$parl_inc_tax_2016 <- 1
 # Write parliamentarian data
 # -----
 
-#head(parl_df)
+head(parl_df)
 write.csv(parl_df, file = "data/cleaned_parliamentary_2016.csv", row.names = FALSE)
