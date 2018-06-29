@@ -16,7 +16,7 @@ Once the data are downloaded to `data/2018 Candidate Scrutiny Forms` following t
 * Run `00_scrape_scrutiny_forms.R` to read from PDFs and create intermediary data
 * Run `01_clean_scrutiny_data.R` to clean up and standardize the scraped data
 
-You can also regenerate the cleaned incumbent parliamentarian data, used in `01_clean_scrutiny_data.R`, bt running `data/00_scrape_parl_tax_2016.R`
+You can also regenerate the cleaned incumbent parliamentarian data, used in `01_clean_scrutiny_data.R`, by running `data/00_scrape_parl_tax_2016.R`
 
 ## Scope and possible gaps in data
 Pakistani election law does not impose residency requirements for candidacy filings and allows individual candidates to contest multiple seats simultaneously, within and across assemblies and provinces. As of the initial data release the ECP provided information for 19397 candidacy filings and 15907 unique candidates (as identified by accompanying Computerized National ID Card records). Note that in some cases individual records reported by the FBR, NAB, and SBP may not be consistent across multiple constituency filings.
