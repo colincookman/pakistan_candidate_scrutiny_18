@@ -5,7 +5,7 @@ This repository hosts open source R code used to scan, consolidate, tidy, and cl
 Please note that this code is still a work in progress and data outputs hosted here may be incomplete. For questions, suggestions, or to contribute, please leave an issue here or contact the contributors, Luke Sonnet and Colin Cookman.
 
 ## Data
-The raw files used as a data source are approximately 10.3 GB in size and too large to host in this Github repository; the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) provides information on alternative mirror hosts that can be used to obtain these original raw pdfs.
+The raw files used as a data source are approximately 10.3 GB in size and too large to host in this Github repository; the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) provides information on alternative mirror hosts that can be used to obtain these original raw pdfs. We also draw on data posted by the FBR about the tax records of parliamentarians in 2016, [available on the FBR's page here](http://download1.fbr.gov.pk/Docs/2017727974535733TaxDirectory-Parliamentarians2016.pdf) and in the [data subfolder](https://github.com/colincookman/pakistan_2018_candidates/tree/master/data) of this repository.
 
 ## Code replication
 
@@ -13,6 +13,8 @@ Once the data are downloaded to `data/2018 Candidate Scrutiny Forms` following t
 
 * Run `00_scrape_scrutiny_forms.R` to read from PDFs and create intermediary data
 * Run `01_clean_scrutiny_data.R` to clean up and standardize the scraped data
+
+You can also regenerate the cleaned incumbent parliamentarian data, used in `01_clean_scrutiny_data.R`, bt running `data/00_scrape_parl_tax_2016.R`
 
 ## Scope and possible gaps in data
 Pakistani election law does not impose residency requirements for candidacy filings and allows individual candidates to contest multiple seats simultaneously, within and across assemblies and provinces. As of the initial data release the ECP provided information for 19397 candidacy filings and 15907 unique candidates (as identified by accompanying Computerized National ID Card records). Note that in some cases individual records reported by the FBR, NAB, and SBP may not be consistent across multiple constituency filings.
@@ -55,6 +57,8 @@ As a possible focus for future investigation, the [filing_sequence_gaps.csv](htt
 This dataset is being presented to encourage broader open data sharing among the community of analysts on Pakistan. We make no guarantees as to and cannot verify the accuracy of, or account for any discrepancies in, the underlying data.
 
 ## pk_candidate_scrutiny_data_2018.csv variable key
+
+There are currently three rows in this dataset for every candidate-constituency. Each row is then a candidate-constituency-tax_year.
 
 **candidate_code:** Candidacy filing code generated from constituency and candidate number (not unique to single individuals)
 
@@ -112,6 +116,20 @@ This dataset is being presented to encourage broader open data sharing among the
 
 **candidate_business_loan:** SBP remarks on candidate business loans, if any reported
 
+**parl_inc_tax_2016:** An indicator for whether this CNIC is linked to a parliamentarian in 2016 when the FBR released incumbents tax payment amounts in the 2016 Incumbent Parliamentarian report
+
+**parl_inc_name:** Candidate name when a parliamentarian as reported by the FBR in the 2016 Incumbent Parliamentarian report
+
+**parl_inc_chamber:** Candidate chamber when a parliamentarian as reported by the FBR in the 2016 Incumbent Parliamentarian report
+
+**parl_inc_province:** Candidate province when a parliamentarian as reported by the FBR in the 2016 Incumbent Parliamentarian report, incomplete for MNAs
+
+**parl_inc_type:** Candidate seat type when a parliamentarian as reported by the FBR in the 2016 Incumbent Parliamentarian report, incomplete for MNAs
+
+**parl_tax_paid_2016:** Amount paid by candidate in 2016 when they were a parliamentarian, as reported by the FBR in the 2016 Incumbent Parliamentarian report
+
+**parl_aop_tax_paid_2016:** Amount paid by AOPs the candidate was a part of in 2016 when they were a parliamentarian, as reported by the FBR in the 2016 Incumbent Parliamentarian report
+
 **candidate_name_FBR:** Candidate name as reported by FBR in Urdu unicode
 
 **candidate_name_NAB:** Candidate name as reported by NAB in Urdu unicode
@@ -123,3 +141,7 @@ This dataset is being presented to encourage broader open data sharing among the
 **MNIC_match:** Check on whether NAB and SBP MNIC identifications match
 
 **target:** Directory path for folder with candidate data
+
+### wide version of the data
+
+We also release a wide version of the data as `pk_candidate_scrutiny_data_2018_wide.csv`. All that changes is the data is no longer candidate-constituency-tax_year, but is rather just candidate-constituency level. All of the `candidate_tax_*` variables scraped from the FBR PDFs become `candidate_tax_*_YYYY` variables.
