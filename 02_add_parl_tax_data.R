@@ -35,6 +35,13 @@ mdf <- merge(
   all.x = TRUE
 )
 
+mdf$incumbent <- !is.na(mdf$parl_constituency)
+mdf$candidate_tax_paid_num_2016[is.na(mdf$candidate_tax_paid_num_2016)] <- 0
+ggplot(mdf, aes(x = incumbent, y = log(candidate_tax_paid_num_2016+1))) +
+  geom_violin()
+
+write.csv(mdf, file = "data/scrutiny_w_incumbents.csv")
+
 # Plot to show 2016 data is v close
 ggplot(mdf, aes(x = log(parl_tax_paid + 1), y = log(candidate_tax_paid_num_2016+1))) + 
   geom_point(alpha = 0.2) +
@@ -42,6 +49,7 @@ ggplot(mdf, aes(x = log(parl_tax_paid + 1), y = log(candidate_tax_paid_num_2016+
   theme_bw()
 
 ggplot(mdf, aes(x = log(parl_tax_paid + 1), y = log(candidate_tax_paid_num_2016+1))) + 
-  geom_hex() +
+  geom_hex(bins = 10) +
   geom_abline(intercept = 0, slope = 1) +
   theme_bw()
+

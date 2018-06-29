@@ -403,34 +403,7 @@ candidate_df <- left_join(candidate_df, multi_candidate, by = "candidate_CNIC_EC
 # Final output
 # ----------
 
-# reorder columns -------------------------------------------------------------
-candidate_df <- dplyr::select(candidate_df,
-  # constituency meta
-  candidate_code, province, assembly, constituency_number, candidate_number,
-  # candidate meta
-  candidate_CNIC_ECP, # dropping candidate_CNIC_FBR, candidate_CNIC_NAB, and candidate_CNIC_SBP
-  multi_candidate,
-  candidate_NTN, candidate_NTN_issue, candidate_RTO,
-  candidate_MNIC_NAB, candidate_MNIC_SBP,
-  # tax data
-  tax_year,
-  candidate_tax_type,
-  candidate_tax_paid, candidate_tax_paid_num, 
-  candidate_tax_receipts, candidate_tax_receipts_num,
-  candidate_tax_income, candidate_tax_income_num,
-  candidate_tax_remarks,
-  # NAB data
-  candidate_NAB_guilty, candidate_NAB_conviction, candidate_NAB_plea, candidate_NAB_accused,
-  candidate_NAB_remarks,
-  # SBP data
-  candidate_personal_loan, candidate_business_loan,
-  # additional metadata
-  candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
-  urdu_name_match, 
-  MNIC_match,
-  target
-)
-
+# reorder data -------------------------------------------------------------
 candidate_df <- dplyr::arrange(candidate_df, candidate_code)
 
 # search for possible missing candidate forms in available sequence -----------
@@ -461,16 +434,67 @@ aggregate_filing_count <- constituency_filing_count %>%
     minority_seats = sum(count[constituency_number == "Minority List"])
   )
 
-#
+# Add 2016 Parliamentary data
+parl_df <- read.csv("data/cleaned_parliamentary_2016.csv",
+                    stringsAsFactors = FALSE)
+
+# merge with wide data (no double merges, note same n of rows in dfw and mdf)
+merged_df <- merge(
+  candidate_df, 
+  parl_df, 
+  by.x = "candidate_CNIC_ECP", 
+  by.y = "CNIC",
+  all.x = TRUE
+)
+
+
+if (nrow(merged_df) != nrow(candidate_df)) {
+  stop("error in merge")
+}
+
+merged_df$parl_incumbent_tax_2016[is.na(merged_df$parl_incumbent_tax_2016)] <- 0
+
+nrow(parl_df)
+sum(merged_df$parl_incumbent_tax_2016) 
+
+# reorder columns --------------------
+
+merged_df <- dplyr::select(merged_df,
+  # constituency meta
+  candidate_code, province, assembly, constituency_number, candidate_number,
+  # candidate meta
+  candidate_CNIC_ECP, # dropping candidate_CNIC_FBR, candidate_CNIC_NAB, and candidate_CNIC_SBP
+  multi_candidate,
+  candidate_NTN, candidate_NTN_issue, candidate_RTO,
+  candidate_MNIC_NAB, candidate_MNIC_SBP,
+  # tax data
+  tax_year,
+  candidate_tax_type,
+  candidate_tax_paid, candidate_tax_paid_num, 
+  candidate_tax_receipts, candidate_tax_receipts_num,
+  candidate_tax_income, candidate_tax_income_num,
+  candidate_tax_remarks,
+  # NAB data
+  candidate_NAB_guilty, candidate_NAB_conviction, candidate_NAB_plea, candidate_NAB_accused,
+  candidate_NAB_remarks,
+  # SBP data
+  candidate_personal_loan, candidate_business_loan,
+  # Parliamentary incumbent data
+  starts_with("parl_"),
+  # additional metadata
+  candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
+  urdu_name_match, 
+  MNIC_match,
+  target
+)
 
 # re-write csv for final output -----------------------------------------------
 
-write.csv(candidate_df, file = "pk_candidate_scrutiny_data_2018.csv", row.names = FALSE)
+write.csv(merged_df, file = "pk_candidate_scrutiny_data_2018.csv", row.names = FALSE)
 
 # Create wide version
-names(candidate_df)
-candidate_df$candidate_tax
-candidate_df_wide <- candidate_df %>%
+names(merged_df)
+candidate_df_wide <- merged_df %>%
   gather(tax_variable, tax_value, -(candidate_NAB_guilty:target), -(candidate_code:tax_year)) %>%
   unite(tax_var, tax_variable, tax_year) %>%
   spread(tax_var, tax_value)
