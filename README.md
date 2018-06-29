@@ -2,7 +2,7 @@
 
 This repository hosts open source R code used to scan, consolidate, tidy, and clean candidate scrutiny forms released by the Election Commission of Pakistan for prospective candidates for Pakistan's 2018 national and provincial assembly elections. The scrutiny forms consist of data released on tax payments from the Federal Board of Revenue (FBR), corruption cases from the the National Accountability Bureau (NAB), and oustanding loans from the State Bank of Pakistan (SBP).
 
-The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018.csv), or in wide format (collapsing three reported tax-year rows per candidate into a single row) as [pk_candidate_scrutiny_data_2018_wide.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018_wide.csv).
+The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_candidate_scrutiny_18/raw/master/pk_candidate_scrutiny_data_2018.csv), or in wide format (collapsing three reported tax-year rows per candidate into a single row) as [pk_candidate_scrutiny_data_2018_wide.csv](https://github.com/colincookman/pakistan_candidate_scrutiny_18/raw/master/pk_candidate_scrutiny_data_2018_wide.csv).
 
 If you use this data, please consider using the following citation when it is appropriate:
 ```
