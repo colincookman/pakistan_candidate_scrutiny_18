@@ -6,7 +6,8 @@ The final output after cleaning is also included as [pk_candidate_scrutiny_data_
 
 If you use this data, please consider using the following citation when it is appropriate:
 ```
-Cookman, Colin; Sonnet, Luke, 2018, "2018 Pakistan General Election Candidate Scrutiny Forms", https://doi.org/10.7910/DVN/PX8JKY, Harvard Dataverse, V1, UNF:6:T12VRIN5/4mgmHYXmTB+4g==
+Cookman, Colin; Sonnet, Luke, 2018, "2018 Pakistan General Election Candidate Scrutiny Forms",
+https://doi.org/10.7910/DVN/PX8JKY, Harvard Dataverse, V1, UNF:6:T12VRIN5/4mgmHYXmTB+4g==
 ```
 You can find citation tools such as a .bib file on this databases [dataverse page here](https://doi.org/10.7910/DVN/PX8JKY).
 
