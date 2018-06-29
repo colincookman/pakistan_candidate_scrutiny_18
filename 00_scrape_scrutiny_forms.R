@@ -97,7 +97,7 @@ read_candidate_folder <- function(target) {
   
   # CC: Skip for now if empty while it syncs
   if (length(FBR) == 0 | length(NAB) == 0) {
-    cat(paste0(target, "\tmissing a file\n"), file = "missing.log", append = TRUE)
+    cat(paste0(target, "\tmissing a file\n"), file = "data/missing.log", append = TRUE)
     return(data.frame())
   }
   
@@ -279,35 +279,35 @@ read_candidate_folder <- function(target) {
   
   SBP_text <- read_pdf_text(SBP, target)
   if (!is.character(SBP_text)) {
-  SBP_dat <- data.frame(
-    candidate_CNIC_SBP = NA,
-    candidate_MNIC_SBP = NA,
-    candidate_name_SBP = NA,
-    candidate_loan_info = NA
-  )
+    SBP_dat <- data.frame(
+      candidate_CNIC_SBP = NA,
+      candidate_MNIC_SBP = NA,
+      candidate_name_SBP = NA,
+      candidate_loan_info = NA
+    )
   } else {
-  CNIC_row <- grep("CNIC of Candidate:", SBP_text)
-  MNIC_row <- grep("MNIC of Candidate:", SBP_text)
+    CNIC_row <- grep("CNIC of Candidate:", SBP_text)
+    MNIC_row <- grep("MNIC of Candidate:", SBP_text)
+    
+    SBP_dat <- data.frame(
+      candidate_CNIC_SBP = trimws(str_split(SBP_text[CNIC_row], ":", simplify = TRUE)[1,2]),
+      candidate_MNIC_SBP = trimws(str_split(SBP_text[MNIC_row], ":", simplify = TRUE)[1,2])
+    )
   
-  SBP_dat <- data.frame(
-    candidate_CNIC_SBP = trimws(str_split(SBP_text[CNIC_row], ":", simplify = TRUE)[1,2]),
-    candidate_MNIC_SBP = trimws(str_split(SBP_text[MNIC_row], ":", simplify = TRUE)[1,2])
-  )
-
-  Name_row <- grep("Name of Candidate:", SBP_text)
-  
-  # candidate names missing in some SBP forms
-  if (length(Name_row) == 0) {
-    SBP_dat$candidate_name_SBP <- NA 
-  } else {
-    SBP_dat$candidate_name_SBP <- trimws(str_split(SBP_text[Name_row], ":", simplify = TRUE)[1,2])
-  }
-  
-  Loan_info_rows <- grep("below:", SBP_text)
-  Loan_info_rows <- as.integer(Loan_info_rows + 1):length(SBP_text)
-  candidate_loan_info <- trimws(SBP_text[Loan_info_rows])
-  SBP_dat$candidate_loan_info <- paste(candidate_loan_info, collapse = " ")
-  # again just taking raw text for now until can work out the possible outputs and patterns in this section
+    Name_row <- grep("Name of Candidate:", SBP_text)
+    
+    # candidate names missing in some SBP forms
+    if (length(Name_row) == 0) {
+      SBP_dat$candidate_name_SBP <- NA 
+    } else {
+      SBP_dat$candidate_name_SBP <- trimws(str_split(SBP_text[Name_row], ":", simplify = TRUE)[1,2])
+    }
+    
+    Loan_info_rows <- grep("below:", SBP_text)
+    Loan_info_rows <- as.integer(Loan_info_rows + 1):length(SBP_text)
+    candidate_loan_info <- trimws(SBP_text[Loan_info_rows])
+    SBP_dat$candidate_loan_info <- paste(candidate_loan_info, collapse = " ")
+    # again just taking raw text for now until can work out the possible outputs and patterns in this section
   }
   
   # Combine all form data -------------------------------------------------------
@@ -322,7 +322,7 @@ read_candidate_folder <- function(target) {
   )
   # at some point will want to clean up the differing CNIC numbering conventions between SPB (includes dash) and FBR/NAB
   
-  cat(paste0(target, "\t", "success\n"), file = "success.log", append = TRUE)
+  cat(paste0(target, "\t", "success\n"), file = "data/success.log", append = TRUE)
   
   # Reorders data, note `everything()` which will just get the rest
   select(ret,
