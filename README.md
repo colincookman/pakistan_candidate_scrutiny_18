@@ -99,15 +99,15 @@ There are currently three rows in this dataset for every candidate-constituency.
 
 **candidate_tax-paid:** Tax paid by candidate as reported by FBR
 
-**candidate_tax_paid_num:** Tax paid converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered.
+**candidate_tax_paid_num:** Tax paid converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_receipts:** "Receipts under final tax regime" as reported by FBR
 
-**candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered.
+**candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_income:** Taxable income as reported by FBR
 
-**candidate_tax_income_num:** Taxable income converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered.
+**candidate_tax_income_num:** Taxable income converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_remarks:** Additional remarks as reported by FBR
 
