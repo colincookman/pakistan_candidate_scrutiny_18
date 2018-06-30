@@ -119,7 +119,7 @@ There are currently three rows in this dataset for every candidate-constituency.
 
 **candidate_NAB_accused:** Binary variable if NAB reported candidate accused or otherwise facing pending cases
 
-**candidate_NAB_remarks:** NAB remarks on any 
+**candidate_NAB_remarks:** NAB remarks if any
 
 **candidate_personal_loan:** SBP remarks on candidate personal loans, if any reported
 
