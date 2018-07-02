@@ -480,7 +480,7 @@ merged_df <- dplyr::select(merged_df,
   # SBP data
   candidate_personal_loan, candidate_business_loan,
   # Parliamentary incumbent data
-  parl_inc_tax_2016, parl_inc_name, parl_inc_chamber, parl_inc_province,
+  parl_inc_tax_2016, parl_inc_name, parl_inc_constituency, parl_inc_chamber, parl_inc_province,
   parl_inc_type, parl_tax_paid_2016, parl_aop_tax_paid_2016,
   # additional metadata
   candidate_name_FBR, candidate_name_NAB, candidate_name_SBP,
