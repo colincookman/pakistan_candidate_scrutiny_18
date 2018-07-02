@@ -2,11 +2,12 @@
 
 This repository hosts open source R code used to scan, consolidate, tidy, and clean candidate scrutiny forms released by the Election Commission of Pakistan for prospective candidates for Pakistan's 2018 national and provincial assembly elections. The scrutiny forms consist of data released on tax payments from the Federal Board of Revenue (FBR), corruption cases from the the National Accountability Bureau (NAB), and oustanding loans from the State Bank of Pakistan (SBP).
 
-The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018.csv), or in wide format (collapsing three reported tax-year rows per candidate into a single row) as [pk_candidate_scrutiny_data_2018_wide.csv](https://github.com/colincookman/pakistan_2018_candidates/blob/master/pk_candidate_scrutiny_data_2018_wide.csv).
+The final output after cleaning is also included as [pk_candidate_scrutiny_data_2018.csv](https://github.com/colincookman/pakistan_candidate_scrutiny_18/raw/master/pk_candidate_scrutiny_data_2018.csv), or in wide format (collapsing three reported tax-year rows per candidate into a single row) as [pk_candidate_scrutiny_data_2018_wide.csv](https://github.com/colincookman/pakistan_candidate_scrutiny_18/raw/master/pk_candidate_scrutiny_data_2018_wide.csv).
 
 If you use this data, please consider using the following citation when it is appropriate:
 ```
-Cookman, Colin; Sonnet, Luke, 2018, "2018 Pakistan General Election Candidate Scrutiny Forms", https://doi.org/10.7910/DVN/PX8JKY, Harvard Dataverse, V1, UNF:6:T12VRIN5/4mgmHYXmTB+4g==
+Cookman, Colin; Sonnet, Luke, 2018, "2018 Pakistan General Election Candidate Scrutiny Forms",
+https://doi.org/10.7910/DVN/PX8JKY, Harvard Dataverse, V1, UNF:6:T12VRIN5/4mgmHYXmTB+4g==
 ```
 You can find citation tools such as a .bib file on this databases [dataverse page here](https://doi.org/10.7910/DVN/PX8JKY).
 
@@ -98,15 +99,15 @@ There are currently three rows in this dataset for every candidate-constituency.
 
 **candidate_tax-paid:** Tax paid by candidate as reported by FBR
 
-**candidate_tax_paid_num:** Tax paid converted to numeric values for calculation
+**candidate_tax_paid_num:** Tax paid converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_receipts:** "Receipts under final tax regime" as reported by FBR
 
-**candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation
+**candidate_tax_receipts_num:** Tax receipts converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_income:** Taxable income as reported by FBR
 
-**candidate_tax_income_num:** Taxable income converted to numeric values for calculation
+**candidate_tax_income_num:** Taxable income converted to numeric values for calculation; if multiple numbers were found in the field, they are summed together. Missing only if there was no data for that row or they were listed as Non-Filers or were Unregistered. None of these NAs are the result of a missing form for a particular candidate.
 
 **candidate_tax_remarks:** Additional remarks as reported by FBR
 
@@ -118,7 +119,7 @@ There are currently three rows in this dataset for every candidate-constituency.
 
 **candidate_NAB_accused:** Binary variable if NAB reported candidate accused or otherwise facing pending cases
 
-**candidate_NAB_remarks:** NAB remarks on any 
+**candidate_NAB_remarks:** NAB remarks if any
 
 **candidate_personal_loan:** SBP remarks on candidate personal loans, if any reported
 
